@@ -1,0 +1,24 @@
+name: Run Custom Stock Pipeline
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: pip install -r requirements.txt
+
+      - name: Run script
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+        run: python custom_stocks_pipeline.py
