@@ -223,20 +223,33 @@ for t in tickers:
         fast = obj.fast_info
         info = obj.info
 
-        metrics_rows.append((
-            t,
-            fast.get("last_price"),
-            fast.get("last_volume"),
-            info.get("marketCap"),
-            fast.get("day_high"),
-            fast.get("day_low"),
-            fast.get("year_high"),
-            fast.get("year_low"),
-            info.get("trailingPE"),
-            info.get("trailingEps"),
-            fast.get("shares"),
-            pd.to_datetime("today").date()
-        ))
+     price = fast.get("last_price")
+volume = fast.get("last_volume")
+
+# Correct shares (primary source)
+shares = info.get("sharesOutstanding") or fast.get("shares")
+
+# Correct market cap (recalculate for consistency)
+market_cap = (
+    price * shares
+    if price and shares
+    else info.get("marketCap")
+)
+
+metrics_rows.append((
+    t,
+    price,
+    volume,
+    market_cap,
+    fast.get("day_high"),
+    fast.get("day_low"),
+    fast.get("year_high"),
+    fast.get("year_low"),
+    info.get("trailingPE"),
+    info.get("trailingEps"),
+    shares,
+    pd.to_datetime("today").date()
+))
 
     except Exception as e:
         print(f"Metrics error {t}: {e}")
