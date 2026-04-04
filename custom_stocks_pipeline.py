@@ -223,63 +223,37 @@ for t in tickers:
         fast = obj.fast_info
         info = obj.info
 
-     price = fast.get("last_price")
-volume = fast.get("last_volume")
+        # ✅ FIXED INDENTATION + LOGIC
+        price = fast.get("last_price")
+        volume = fast.get("last_volume")
 
-# Correct shares (primary source)
-shares = info.get("sharesOutstanding") or fast.get("shares")
+        # Correct shares
+        shares = info.get("sharesOutstanding") or fast.get("shares")
 
-# Correct market cap (recalculate for consistency)
-market_cap = (
-    price * shares
-    if price and shares
-    else info.get("marketCap")
-)
+        # Correct market cap
+        market_cap = (
+            price * shares
+            if price and shares
+            else info.get("marketCap")
+        )
 
-metrics_rows.append((
-    t,
-    price,
-    volume,
-    market_cap,
-    fast.get("day_high"),
-    fast.get("day_low"),
-    fast.get("year_high"),
-    fast.get("year_low"),
-    info.get("trailingPE"),
-    info.get("trailingEps"),
-    shares,
-    pd.to_datetime("today").date()
-))
+        metrics_rows.append((
+            t,
+            price,
+            volume,
+            market_cap,
+            fast.get("day_high"),
+            fast.get("day_low"),
+            fast.get("year_high"),
+            fast.get("year_low"),
+            info.get("trailingPE"),
+            info.get("trailingEps"),
+            shares,
+            pd.to_datetime("today").date()
+        ))
 
     except Exception as e:
         print(f"Metrics error {t}: {e}")
-
-if metrics_rows:
-    execute_values(
-        cur,
-        """
-        INSERT INTO custom_stock_metrics (
-            ticker, price, volume, market_cap,
-            day_high, day_low, year_high, year_low,
-            pe_ratio, eps, shares, updated_at
-        )
-        VALUES %s
-        ON CONFLICT (ticker)
-        DO UPDATE SET
-            price = EXCLUDED.price,
-            volume = EXCLUDED.volume,
-            market_cap = EXCLUDED.market_cap,
-            day_high = EXCLUDED.day_high,
-            day_low = EXCLUDED.day_low,
-            pe_ratio = EXCLUDED.pe_ratio,
-            eps = EXCLUDED.eps,
-            updated_at = EXCLUDED.updated_at
-        """,
-        metrics_rows
-    )
-
-    conn.commit()
-    print("Metrics loaded ✅")
 
 # =========================
 # CLOSE
