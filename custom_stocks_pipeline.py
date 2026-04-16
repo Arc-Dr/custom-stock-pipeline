@@ -13,7 +13,16 @@ cur = conn.cursor()
 # =========================
 # TICKERS
 # =========================
-tickers = ['UNP','PG','MMM','ITW','X']
+tickers = [
+    'XOM','X','UNP','JPM','GE','PG','M','SHLD','WEC','MMM','EMR','ITW','KO','CL','MO','JNJ',
+    'HSY','NSRGY','K','GIS','CHD','CLX','HRL','UL','WMT','HD','NKE','TJX','DG','FAST','AZO',
+    'ROST','ORLY','TSCO','ITX','MC','BRK-A','V','MA','AXP','BLK','MKL','FFH','TROW','CME',
+    'ICE','MCO','SPGI','MSFT','INTC','ORCL','CSCO','TXN','AMAT','ADP','PAYX','FI','ADI',
+    'KLAC','LRCX','AMZN','AAPL','GOOGL','NFLX','CRM','BKNG','EBAY','VRSN','ROP','TYL',
+    'FICO','JKHY','UNH','ABT','REGN','NVO','ISRG','DHR','LLY','SYK','EW','IDXX','WST',
+    'ASML','NVDA','SHOP','MELI','META','TSLA','NOW','VEEV','DDOG','ADYEY','RACE','HESAY',
+    'TSM','MNST','NVR','CSUAY','POOL','CPRT','KSU','MIDD','ROL','IBP','SBAC','TDG','HEI'
+]
 
 # =========================
 # CREATE TABLES
