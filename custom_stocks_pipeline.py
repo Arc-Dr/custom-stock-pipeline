@@ -92,7 +92,6 @@ for t in tickers:
             progress=False
         )
 
-        # fallback for problematic tickers
         if df.empty:
             print(f"{t} failed, trying fallback...")
             df = yf.download(
@@ -111,7 +110,7 @@ for t in tickers:
 
         temp = df['Close'].reset_index()
         temp['ticker'] = t
-        temp.columns = ['date','value','ticker']
+        temp.columns = ['date', 'value', 'ticker']
 
         frames.append(temp)
 
@@ -119,12 +118,11 @@ for t in tickers:
         print(f"Error for {t}: {e}")
         continue
 
-# Combine
 if frames:
     price_df = pd.concat(frames, ignore_index=True).dropna()
     price_df['date'] = pd.to_datetime(price_df['date']).dt.date
 
-    price_df = price_df.sort_values(['ticker','date'])
+    price_df = price_df.sort_values(['ticker', 'date'])
     price_df['ipo_price'] = price_df.groupby('ticker')['value'].transform('first')
     price_df['pct_change'] = (price_df['value'] - price_df['ipo_price']) / price_df['ipo_price']
 
@@ -137,7 +135,7 @@ if frames:
         VALUES %s
         ON CONFLICT DO NOTHING
         """,
-        list(price_df[['date','value','ticker','ipo_price','pct_change']].itertuples(index=False, name=None))
+        list(price_df[['date', 'value', 'ticker', 'ipo_price', 'pct_change']].itertuples(index=False, name=None))
     )
 
     conn.commit()
@@ -232,14 +230,11 @@ for t in tickers:
         fast = obj.fast_info
         info = obj.info
 
-        # ✅ FIXED INDENTATION + LOGIC
         price = fast.get("last_price")
         volume = fast.get("last_volume")
 
-        # Correct shares
         shares = info.get("sharesOutstanding") or fast.get("shares")
 
-        # Correct market cap
         market_cap = (
             price * shares
             if price and shares
@@ -263,6 +258,38 @@ for t in tickers:
 
     except Exception as e:
         print(f"Metrics error {t}: {e}")
+
+if metrics_rows:
+    execute_values(
+        cur,
+        """
+        INSERT INTO custom_stock_metrics (
+            ticker, price, volume, market_cap,
+            day_high, day_low, year_high, year_low,
+            pe_ratio, eps, shares, updated_at
+        )
+        VALUES %s
+        ON CONFLICT (ticker)
+        DO UPDATE SET
+            price = EXCLUDED.price,
+            volume = EXCLUDED.volume,
+            market_cap = EXCLUDED.market_cap,
+            day_high = EXCLUDED.day_high,
+            day_low = EXCLUDED.day_low,
+            year_high = EXCLUDED.year_high,
+            year_low = EXCLUDED.year_low,
+            pe_ratio = EXCLUDED.pe_ratio,
+            eps = EXCLUDED.eps,
+            shares = EXCLUDED.shares,
+            updated_at = EXCLUDED.updated_at
+        """,
+        metrics_rows
+    )
+
+    conn.commit()
+    print(f"Metrics loaded: {len(metrics_rows)} ✅")
+else:
+    print("No metrics fetched ❌")
 
 # =========================
 # CLOSE
