@@ -1,13 +1,14 @@
 import yfinance as yf
 import pandas as pd
 import psycopg2
-import os
 from psycopg2.extras import execute_values
 
 # =========================
-# DB CONNECTION
+# DB CONNECTION (NEW NEON)
 # =========================
-conn = psycopg2.connect(os.environ["DB_URL"])
+conn = psycopg2.connect(
+    "postgresql://neondb_owner:npg_29aQzXVJMpri@ep-cool-cake-a1kl4dnm-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+)
 cur = conn.cursor()
 
 # =========================
@@ -29,11 +30,12 @@ tickers = [
 # =========================
 cur.execute("""
 CREATE TABLE IF NOT EXISTS custom_stock_prices (
-    date DATE,
+    date DATE NOT NULL,
     value NUMERIC,
-    ticker TEXT,
+    ticker TEXT NOT NULL,
     ipo_price NUMERIC,
-    pct_change NUMERIC
+    pct_change NUMERIC,
+    PRIMARY KEY (ticker, date)
 );
 
 CREATE TABLE IF NOT EXISTS custom_stock_profile (
@@ -133,7 +135,7 @@ if frames:
         """
         INSERT INTO custom_stock_prices (date, value, ticker, ipo_price, pct_change)
         VALUES %s
-        ON CONFLICT DO NOTHING
+        ON CONFLICT (ticker, date) DO NOTHING
         """,
         list(price_df[['date', 'value', 'ticker', 'ipo_price', 'pct_change']].itertuples(index=False, name=None))
     )
