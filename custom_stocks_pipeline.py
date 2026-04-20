@@ -6,11 +6,9 @@ from psycopg2.extras import execute_values
 # =========================
 # DB CONNECTION (NEW NEON)
 # =========================
-conn = psycopg2.connect(
-    "postgresql://neondb_owner:npg_29aQzXVJMpri@ep-cool-cake-a1kl4dnm-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-)
+import os
+conn = psycopg2.connect(os.environ["DB_URL"])
 cur = conn.cursor()
-
 # =========================
 # TICKERS
 # =========================
